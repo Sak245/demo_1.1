@@ -13,9 +13,10 @@ export function UrlInput() {
 
     // Load saved key on mount
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
         const savedKey = localStorage.getItem("webrev_groq_key");
-        // eslint-disable-next-line 
+
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         if (savedKey) setApiKey(savedKey);
     }, []);
 
@@ -55,7 +56,7 @@ export function UrlInput() {
             <div className="flex items-center gap-2">
                 <Input
                     type="password"
-                    placeholder="Enter Groq API Key (Optional Override)"
+                    placeholder="Enter Groq API Key (Recommended to avoid Rate Limits)"
                     className="text-xs h-8 bg-zinc-50 dark:bg-zinc-900 border-dashed"
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}

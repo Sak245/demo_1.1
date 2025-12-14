@@ -9,9 +9,14 @@ export async function POST(req: Request) {
         const { data, redesign } = body; // Expects analysis + redesign plan
 
         // API KEY OVERRIDE
-        const apiKey = req.headers.get("x-groq-api-key");
+        // API KEY OVERRIDE
+        let rawKey = req.headers.get("x-groq-api-key") || process.env.GROQ_API_KEY || "";
+        if (rawKey.includes(",")) rawKey = rawKey.split(",")[0];
+        const keyMatch = rawKey.match(/(gsk_[a-zA-Z0-9]{50,})/);
+        const finalKey = keyMatch ? keyMatch[0] : rawKey.trim();
+
         const client = new Groq({
-            apiKey: apiKey || process.env.GROQ_API_KEY,
+            apiKey: finalKey,
         });
 
         const prompt = [
@@ -38,7 +43,7 @@ export async function POST(req: Request) {
 
         const chatCompletion = await client.chat.completions.create({
             messages: [{ role: 'user', content: prompt }],
-            model: 'llama-3.3-70b-versatile',
+            model: 'llama-3.1-8b-instant',
             temperature: 0.5,
             max_tokens: 2048,
             response_format: { type: 'json_object' }
@@ -87,8 +92,15 @@ export async function POST(req: Request) {
 
         return NextResponse.json(validatedData);
 
-    } catch (error) {
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         console.error('Roadmap error:', error);
+        const status = error?.status || 500;
+        if (status === 429) {
+            return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+        }
+        if (status === 401) {
+            return NextResponse.json({ error: 'Invalid API Key' }, { status: 401 });
+        }
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

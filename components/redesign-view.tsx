@@ -7,6 +7,8 @@ import { useState } from "react";
 import { z } from "zod";
 import { RedesignSchema } from "@/lib/schemas";
 
+import { Eye, Columns, AlertCircle } from "lucide-react";
+
 type RedesignResult = z.infer<typeof RedesignSchema>;
 
 interface RedesignViewProps {
@@ -16,25 +18,101 @@ interface RedesignViewProps {
     logoUrl?: string | null;
 }
 
-export function RedesignView({ data, onRefine, logoUrl }: RedesignViewProps) {
+export function RedesignView({ data, scrapeData, onRefine, logoUrl }: RedesignViewProps) {
     const [refining, setRefining] = useState(false);
+    const [viewMode, setViewMode] = useState<"single" | "split">("single");
 
     if (!data?.visual_preview) return null;
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-bold tracking-tight border-t pt-8">Proposed Redesign</h2>
+            <div className="flex flex-col md:flex-row justify-between items-center border-t pt-8 gap-4">
+                <h2 className="text-2xl font-bold tracking-tight">Proposed Redesign</h2>
+                <div className="flex items-center gap-2 bg-muted p-1 rounded-lg">
+                    <Button
+                        variant={viewMode === "single" ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setViewMode("single")}
+                        className="gap-2"
+                    >
+                        <Eye className="w-4 h-4" /> Preview
+                    </Button>
+                    <Button
+                        variant={viewMode === "split" ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setViewMode("split")}
+                        className="gap-2"
+                    >
+                        <Columns className="w-4 h-4" /> Comparison
+                    </Button>
+                </div>
+            </div>
 
             {/* VISUAL PREVIEW & REFINEMENT */}
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-indigo-600 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
-                        AI-Generated Live Preview
+                        {viewMode === "split" ? "Original vs. Redesign" : "AI-Generated Live Preview"}
                     </h3>
                 </div>
 
-                <LivePreview data={data} logoUrl={logoUrl} />
+                <div className={`grid gap-6 ${viewMode === "split" ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"}`}>
+                    {/* LEFT: ORIGINAL (Only in Split Mode) */}
+                    {viewMode === "split" && (
+                        <Card className="overflow-hidden border-2 border-dashed h-[800px] flex flex-col relative group">
+                            <div className="p-3 bg-muted text-center text-sm font-semibold border-b flex justify-between items-center px-4">
+                                <span>Original Website (Live)</span>
+                                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                {(scrapeData as any)?.url && (
+                                    <a
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                        href={(scrapeData as any).url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-xs text-blue-600 hover:underline"
+                                    >
+                                        Open in New Tab ↗
+                                    </a>
+                                )}
+                            </div>
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                            {(scrapeData as any)?.url ? (
+                                <>
+                                    <div className="absolute inset-0 z-0 flex items-center justify-center bg-gray-50 text-muted-foreground text-xs p-8 pointer-events-none">
+                                        <div className="text-center">
+                                            <p className="font-semibold mb-1">If this area is blank:</p>
+                                            <p>The website blocks embedded views (e.g. YouTube, Google).</p>
+                                            <p className="mt-2 text-blue-500">Click &quot;Open in New Tab&quot; above.</p>
+                                        </div>
+                                    </div>
+                                    <iframe
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                        src={(scrapeData as any).url}
+                                        className="w-full h-full bg-white relative z-10"
+                                        title="Original Website"
+                                        sandbox="allow-scripts allow-same-origin"
+                                    />
+                                </>
+                            ) : (
+                                <div className="flex items-center justify-center flex-1 text-muted-foreground p-8 text-center">
+                                    <AlertCircle className="w-8 h-8 mb-2 block mx-auto" />
+                                    Original URL not available for comparison.
+                                </div>
+                            )}
+                        </Card>
+                    )}
+
+                    {/* RIGHT: REDESIGN */}
+                    <div className={viewMode === "split" ? "h-[800px] overflow-y-auto border rounded-xl" : ""}>
+                        {viewMode === "split" && (
+                            <div className="p-3 bg-primary text-primary-foreground text-center text-sm font-semibold sticky top-0 z-10">
+                                AI Redesign
+                            </div>
+                        )}
+                        <LivePreview data={data} logoUrl={logoUrl} />
+                    </div>
+                </div>
 
                 {/* Interactive Refinement */}
                 <div className="flex gap-2 p-4 bg-muted/50 rounded-lg border items-center">

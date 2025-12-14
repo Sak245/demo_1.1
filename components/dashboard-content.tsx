@@ -5,7 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { UrlInput } from "@/components/url-input";
 import { Badge } from "@/components/ui/badge";
 import { DownloadReportButton } from "@/components/download-button";
-import { ArrowRight, Globe, History, Sparkles } from "lucide-react";
+import { ArrowRight, Globe, History, Sparkles, AlertCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { useLocalHistory } from "@/hooks/use-local-history";
 import { Button } from "@/components/ui/button";
 import { z } from "zod";
@@ -41,6 +42,15 @@ export function DashboardContent() {
     const [redesign, setRedesign] = useState<RedesignResult | null>(null);
     const [roadmap, setRoadmap] = useState<RoadmapResult | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [retryCount, setRetryCount] = useState(0);
+
+    const handleRetryWithKey = () => {
+        if (apiKey) {
+            localStorage.setItem("webrev_groq_key", apiKey);
+            setStatus("IDLE");
+            setRetryCount(prev => prev + 1);
+        }
+    };
 
     // API KEY Handling
     const [apiKey, setApiKey] = useState<string | null>(null);
@@ -93,6 +103,14 @@ export function DashboardContent() {
                     analyzeData = await analyzeResult.value.json();
                     setAnalysis(analyzeData);
                 } else {
+                    const status = analyzeResult.status === 'fulfilled' ? analyzeResult.value.status : 500;
+                    if (status === 429) {
+                        throw new Error("AI Quota Exceeded. Please wait a few minutes and try again.");
+                    }
+                    if (status === 401) {
+                        // Do not clear key automatically, let user retry
+                        throw new Error("Invalid API Key. Please check your key and try again.");
+                    }
                     const msg = analyzeResult.status === 'fulfilled' ? await analyzeResult.value.text() : analyzeResult.reason;
                     throw new Error(`Analysis failed: ${msg}`);
                 }
@@ -139,7 +157,8 @@ export function DashboardContent() {
         };
 
         fetchData();
-    }, [url, mounted]);
+    }, [url, mounted, retryCount]); // Depend on retryCount
+
 
     const { history } = useLocalHistory();
 
@@ -192,6 +211,20 @@ export function DashboardContent() {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                 <p className="text-muted-foreground">{status === "SCRAPING" ? "Scraping content..." : "Initializing..."}</p>
                 {error && <p className="text-red-500">{error}</p>}
+
+                {/* Retry Input during initialization/loading error if specifically needed, usually error shows below in main view, but if it fails early: */}
+                {error && (
+                    <div className="flex flex-col gap-2 w-full max-w-sm">
+                        <input
+                            type="password"
+                            placeholder="Enter your Groq API Key"
+                            className="border p-2 rounded"
+                            value={apiKey || ""}
+                            onChange={(e) => setApiKey(e.target.value)}
+                        />
+                        <Button onClick={handleRetryWithKey}>Retry with Key</Button>
+                    </div>
+                )}
             </div>
         );
     }
@@ -265,7 +298,37 @@ export function DashboardContent() {
                 </Sheet>
             )}
             {/* Error Message */}
-            {error && <div className="p-4 text-red-500 bg-red-50 rounded-md mb-8">{error}</div>}
+            {/* Error Message & Retry */}
+            {error && (
+                <div className="p-6 text-red-500 bg-red-50 rounded-md mb-8 border border-red-100 flex flex-col gap-4">
+                    <div className="font-semibold flex items-center gap-2">
+                        <AlertCircle className="w-5 h-5" />
+                        Analysis Failed
+                    </div>
+                    <p>{error}</p>
+
+                    <div className="flex flex-col sm:flex-row gap-4 items-end sm:items-center bg-white p-4 rounded-lg border border-red-100">
+                        <div className="flex-1 w-full">
+                            <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                                Add/Update Your Groq API Key to Bypass Limits
+                            </label>
+                            <Input
+                                type="password"
+                                placeholder="gsk_..."
+                                value={apiKey || ""}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setApiKey(e.target.value.trim())}
+                                className="w-full"
+                            />
+                        </div>
+                        <Button
+                            onClick={handleRetryWithKey}
+                            disabled={!apiKey}
+                        >
+                            Retry Analysis
+                        </Button>
+                    </div>
+                </div>
+            )}
 
             <div id="dashboard-report-content" className="space-y-8 p-4 bg-background">
                 {/* 1. Audit Results */}

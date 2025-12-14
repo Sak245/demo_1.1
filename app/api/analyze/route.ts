@@ -7,11 +7,17 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { data } = body; // The scraper output
 
-        // API KEY OVERRIDE
-        const apiKey = req.headers.get("x-groq-api-key");
+        let rawKey = req.headers.get("x-groq-api-key") || process.env.GROQ_API_KEY || "";
+        // Sanitize: Handle comma-separated or concatenated keys (e.g. double entry)
+        if (rawKey.includes(",")) rawKey = rawKey.split(",")[0];
+        // Regex to find the first valid-looking Groq key (gsk_ followed by ~52 alphanumeric chars)
+        const keyMatch = rawKey.match(/(gsk_[a-zA-Z0-9]{50,})/);
+        const finalKey = keyMatch ? keyMatch[0] : rawKey.trim();
+
         const client = new Groq({
-            apiKey: apiKey || process.env.GROQ_API_KEY,
+            apiKey: finalKey,
         });
+        console.log(`Analyze Route: Using Key: ${finalKey.substring(0, 10)}... Length: ${finalKey.length}`);
 
         if (!data) {
             return NextResponse.json({ error: 'Data is required' }, { status: 400 });
@@ -76,13 +82,13 @@ export async function POST(req: Request) {
             messages: [
                 {
                     role: 'user',
-                    content: prompt,
-                },
+                    content: prompt
+                }
             ],
-            model: 'llama-3.3-70b-versatile',
+            model: 'llama-3.1-8b-instant',
             temperature: 0.5,
-            max_tokens: 2048,
-            response_format: { type: 'json_object' }
+            stream: false,
+            response_format: { type: "json_object" }
         });
 
         const result = chatCompletion.choices[0]?.message?.content;
@@ -97,8 +103,15 @@ export async function POST(req: Request) {
 
         return NextResponse.json(validatedData);
 
-    } catch (error) {
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         console.error('Analysis error:', error);
+        const status = error?.status || 500;
+        if (status === 429) {
+            return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+        }
+        if (status === 401) {
+            return NextResponse.json({ error: 'Invalid API Key' }, { status: 401 });
+        }
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

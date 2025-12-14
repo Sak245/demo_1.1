@@ -7,7 +7,7 @@ const ipRequests = new Map<string, { count: number; startTime: number }>();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 const MAX_REQUESTS = 20; // 20 requests per minute
 
-export function middleware(req: NextRequest) {
+export default function proxy(req: NextRequest) {
     const { nextUrl } = req;
     const hasSession = req.cookies.has("webrev_session");
     const isOnDashboard = nextUrl.pathname.startsWith("/dashboard");
