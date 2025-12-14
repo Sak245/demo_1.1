@@ -50,8 +50,28 @@ export async function POST(req: Request) {
         const json = JSON.parse(result);
 
         // Robustness: Handle non-array tools
-        if (json.tech_stack_recommendation && typeof json.tech_stack_recommendation.tools === 'string') {
-            json.tech_stack_recommendation.tools = json.tech_stack_recommendation.tools.split(',').map((t: string) => t.trim());
+        if (json.tech_stack_recommendation) {
+            if (typeof json.tech_stack_recommendation.tools === 'string') {
+                json.tech_stack_recommendation.tools = json.tech_stack_recommendation.tools.split(',').map((t: string) => t.trim());
+            }
+            // Fix: Handle arrays for frontend/backend
+            if (Array.isArray(json.tech_stack_recommendation.frontend)) {
+                json.tech_stack_recommendation.frontend = json.tech_stack_recommendation.frontend.join(", ");
+            }
+            if (Array.isArray(json.tech_stack_recommendation.backend)) {
+                json.tech_stack_recommendation.backend = json.tech_stack_recommendation.backend.join(", ");
+            }
+        }
+
+        // Fix: Handle object migration steps
+        if (Array.isArray(json.migration_steps)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            json.migration_steps = json.migration_steps.map((step: any) => {
+                if (typeof step === 'object' && step !== null) {
+                    return step.step || step.description || step.title || JSON.stringify(step);
+                }
+                return String(step);
+            });
         }
 
         // Robustness: Handle object timeline
