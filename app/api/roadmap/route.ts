@@ -20,9 +20,16 @@ export async function POST(req: Request) {
             `Title: ${data.title}`,
             `Proposed Redesign: ${JSON.stringify(redesign || "Modernize UI and stack")}`,
             "",
+            "Requirements:",
+            "1. Information Architecture updates.",
+            "2. Required React components list.",
+            "3. Suggested Tech Stack (Frontend, Backend, Tools).",
+            "4. Integration/Migration steps.",
+            "5. Developer-ready guidelines.",
+            "",
             "Provide a JSON response with:",
             "1. tech_stack_recommendation(frontend, backend, tools)",
-            "2. migration_steps(step-by-step list)",
+            "2. migration_steps(step-by-step list including IA updates)",
             "3. component_list(list of React components needed)",
             "4. estimated_timeline(in weeks)",
             "",
@@ -40,7 +47,7 @@ export async function POST(req: Request) {
         const result = chatCompletion.choices[0]?.message?.content;
         if (!result) throw new Error("No content from AI");
 
-        let json = JSON.parse(result);
+        const json = JSON.parse(result);
 
         // Robustness: Handle non-array tools
         if (json.tech_stack_recommendation && typeof json.tech_stack_recommendation.tools === 'string') {

@@ -62,10 +62,25 @@ export const AnalyzeSchema = z.object({
         score_estimation: z.number(),
         notes: z.string()
     }),
+    mobile_responsiveness_audit: z.object({
+        score: z.number(),
+        issues: z.array(z.string())
+    }),
+    accessibility_audit: z.object({
+        score: z.number(),
+        issues: z.array(z.string())
+    }),
+    innovation_suggestions: z.array(z.object({
+        name: z.string(),
+        description: z.string(),
+        category: z.enum(["Personalization", "Gamification", "AI/Chatbot", "Interactive", "Micro-interaction", "Other"])
+    })),
     recommendation_engine: z.object({
         priority_actions: z.array(z.object({
             action: z.string(),
             impact: z.enum(["High", "Medium", "Low"]),
+            difficulty: z.enum(["High", "Medium", "Low"]),
+            why_it_matters: z.string().describe("Explanation of importance"),
             description: z.string()
         }))
     })

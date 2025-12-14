@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
 import { authenticate } from "@/lib/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +55,11 @@ export default function LoginPage() {
           </form>
         </CardContent>
       </Card>
+      <div className="mt-8 text-center">
+        <Link href="/" className="text-sm text-muted-foreground hover:underline">
+          &larr; Back to Home
+        </Link>
+      </div>
     </div>
   );
 }

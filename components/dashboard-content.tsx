@@ -269,7 +269,7 @@ export function DashboardContent() {
 
             <div id="dashboard-report-content" className="space-y-8 p-4 bg-background">
                 {/* 1. Audit Results */}
-                <AuditResults analysis={analysis} data={data} />
+                <AuditResults analysis={analysis} />
 
                 {/* 2. Redesign & Live Preview */}
                 {(status === "COMPLETE" || redesign) && (

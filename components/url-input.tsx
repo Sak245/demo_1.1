@@ -13,7 +13,9 @@ export function UrlInput() {
 
     // Load saved key on mount
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         const savedKey = localStorage.getItem("webrev_groq_key");
+        // eslint-disable-next-line 
         if (savedKey) setApiKey(savedKey);
     }, []);
 

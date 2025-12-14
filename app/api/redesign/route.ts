@@ -19,8 +19,8 @@ export async function POST(req: Request) {
         }
 
         const prompt = [
-            "You are an expert UI / UX Designer.",
-            "Based on the following website data, generate a complete redesign plan.",
+            "You are an expert UI / UX Designer and Product Architect.",
+            "Based on the following website data, generate a complete, high-fidelity redesign plan.",
             "",
             "Website Data:",
             JSON.stringify({
@@ -31,6 +31,12 @@ export async function POST(req: Request) {
             }),
             "",
             customPrompt ? `USER STRICT INSTRUCTION: ${customPrompt}` : "",
+            "",
+            "Requirements:",
+            "1. High-fidelity mockups description.",
+            "2. Multiple layout variations (Desktop + Mobile).",
+            "3. Updated modern color palette and typography.",
+            "4. Component-level UI breakdown.",
             "",
             "CRITICAL: Provide a \"visual_preview\" object with content for a Hero section, 3 key Features, and 2 Testimonials.",
             customPrompt ? "Ensure the visual_preview and color_palette strictly reflect the USER INSTRUCTION above." : "Focus on improving engagement and quality.",
