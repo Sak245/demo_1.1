@@ -47,7 +47,7 @@ export function LivePreview({ data, logoUrl }: LivePreviewProps) {
             </div>
 
             {/* PREVIEW CONTENT */}
-            <div className="font-sans min-h-[500px]" style={{ fontFamily: typography_recommendation.body }}>
+            <div className="font-sans min-h-[500px]" style={{ fontFamily: typography_recommendation?.body || 'sans-serif' }}>
 
                 {/* NAV BAR */}
                 <nav className="flex items-center justify-between px-8 py-4 border-b" style={{ backgroundColor: getColor('background'), borderColor: getColor('accent') + '20' }}>
@@ -74,13 +74,13 @@ export function LivePreview({ data, logoUrl }: LivePreviewProps) {
                 {/* Hero Section */}
                 <div className="py-20 px-6 text-center space-y-6">
                     <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight" style={{ color: getColor('primary') }}>
-                        {visual_preview.hero.headline}
+                        {visual_preview?.hero?.headline || "Welcome"}
                     </h1>
                     <p className="text-lg md:text-xl opacity-80 max-w-2xl mx-auto" style={{ color: getColor('text') }}>
-                        {visual_preview.hero.subheadline}
+                        {visual_preview?.hero?.subheadline || "Discover amazing features"}
                     </p>
                     <div className="flex justify-center gap-4">
-                        <Button size="lg" style={{ backgroundColor: getColor('primary'), color: '#fff' }}>{visual_preview.hero.cta_text}</Button>
+                        <Button size="lg" style={{ backgroundColor: getColor('primary'), color: '#fff' }}>{visual_preview?.hero?.cta_text || "Get Started"}</Button>
                         <Button size="lg" variant="outline">Learn More</Button>
                     </div>
                 </div>
@@ -88,8 +88,8 @@ export function LivePreview({ data, logoUrl }: LivePreviewProps) {
                 {/* Features Section */}
                 <div className="py-16 px-6 bg-black/5">
                     <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                        {visual_preview.features.map((feat, i) => {
-                            const Icon = Icons[feat.icon] || Icons.Star;
+                        {(visual_preview?.features || []).map((feat, i) => {
+                            const Icon = Icons[feat.icon || "Star"] || Icons.Star;
                             return (
                                 <div key={i} className="p-6 bg-white rounded-xl shadow-sm space-y-3">
                                     <div className="p-3 w-fit rounded-lg bg-gray-100" style={{ color: getColor('accent') }}>
@@ -107,7 +107,7 @@ export function LivePreview({ data, logoUrl }: LivePreviewProps) {
                 <div className="py-16 px-6">
                     <h2 className="text-2xl font-bold text-center mb-10">Trusted by Experts</h2>
                     <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                        {visual_preview.testimonials.map((test, i) => (
+                        {(visual_preview?.testimonials || []).map((test, i) => (
                             <Card key={i} className="p-6 bg-muted/20 border-none">
                                 <p className="italic text-lg mb-4">&quot;{test.quote}&quot;</p>
                                 <p className="font-bold text-sm text-right">- {test.author}</p>
