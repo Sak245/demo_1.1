@@ -169,9 +169,44 @@ export function RedesignView({ data, scrapeData, onRefine, logoUrl }: RedesignVi
                         <h3 className="font-semibold leading-none tracking-tight">Concept & Wireframe</h3>
                     </div>
                     <div className="p-6 pt-0">
-                        <p className="whitespace-pre-wrap text-sm text-zinc-600 dark:text-zinc-300">
-                            {data.wireframe_description}
-                        </p>
+                        <div className="whitespace-pre-wrap text-sm text-zinc-600 dark:text-zinc-300">
+                            {(() => {
+                                try {
+                                    let content = data.wireframe_description?.trim() || "";
+                                    // Remove markdown code fences if present
+                                    content = content.replace(/^```json\s*/, "").replace(/^```\s*/, "").replace(/\s*```$/, "");
+
+                                    // Attempt to parse if it looks like JSON object
+                                    if (content.startsWith("{")) {
+                                        const parsed = JSON.parse(content);
+                                        return (
+                                            <div className="space-y-4">
+                                                {Object.entries(parsed).map(([key, val]) => (
+                                                    <div key={key}>
+                                                        <span className="font-semibold capitalize text-foreground">
+                                                            {key.replace(/_/g, " ")}:
+                                                        </span>{" "}
+                                                        {Array.isArray(val) ? (
+                                                            <ul className="list-disc list-inside pl-2 mt-1">
+                                                                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                                                {val.map((item: any, i: number) => (
+                                                                    <li key={i}>{typeof item === 'string' ? item : JSON.stringify(item)}</li>
+                                                                ))}
+                                                            </ul>
+                                                        ) : (
+                                                            typeof val === 'string' ? val : JSON.stringify(val)
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        );
+                                    }
+                                } catch (e) {
+                                    // Fallback to text
+                                }
+                                return data.wireframe_description;
+                            })()}
+                        </div>
                     </div>
                 </Card>
             </div>
