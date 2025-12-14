@@ -29,9 +29,35 @@ export function RoadmapView({ roadmap }: RoadmapViewProps) {
                 </div>
                 <div>
                     <h4 className="font-medium mb-2">New Tech Stack</h4>
-                    <pre className="text-xs bg-muted p-2 rounded overflow-auto">
-                        {JSON.stringify(roadmap.tech_stack_recommendation, null, 2)}
-                    </pre>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* Frontend */}
+                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                            <div className="font-semibold text-blue-900 text-sm mb-1">Frontend</div>
+                            <div className="text-sm font-medium">
+                                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                {(roadmap.tech_stack_recommendation as any)?.frontend || "Next.js"}
+                            </div>
+                        </div>
+                        {/* Backend */}
+                        <div className="p-3 bg-green-50 rounded-lg border border-green-100">
+                            <div className="font-semibold text-green-900 text-sm mb-1">Backend</div>
+                            <div className="text-sm font-medium">
+                                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                {(roadmap.tech_stack_recommendation as any)?.backend || "Node.js"}
+                            </div>
+                        </div>
+                        {/* Tools */}
+                        <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
+                            <div className="font-semibold text-purple-900 text-sm mb-1">Tools</div>
+                            <div className="text-sm">
+                                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                {Array.isArray((roadmap.tech_stack_recommendation as any)?.tools)
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    ? ((roadmap.tech_stack_recommendation as any).tools as string[]).join(", ")
+                                    : "Standard Suite"}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </Card>
