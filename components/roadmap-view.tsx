@@ -51,10 +51,14 @@ export function RoadmapView({ roadmap }: RoadmapViewProps) {
                             <div className="font-semibold text-purple-900 text-sm mb-1">Tools</div>
                             <div className="text-sm">
                                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                                {Array.isArray((roadmap.tech_stack_recommendation as any)?.tools)
+                                {(() => {
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    ? ((roadmap.tech_stack_recommendation as any).tools as string[]).join(", ")
-                                    : "Standard Suite"}
+                                    const tools = (roadmap.tech_stack_recommendation as any)?.tools;
+                                    if (Array.isArray(tools) && tools.length > 0) {
+                                        return tools.join(", ");
+                                    }
+                                    return "Standard Web Tools";
+                                })()}
                             </div>
                         </div>
                     </div>
